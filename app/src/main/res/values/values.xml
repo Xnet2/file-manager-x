@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">מנהל הקבצים X</string>
+
+    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">#FF2563EB</item>
+        <item name="android:colorPrimaryDark">#FFF4F6FA</item>
+        <item name="android:colorAccent">#FF2563EB</item>
+        <item name="android:colorControlActivated">#FF2563EB</item>
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:statusBarColor">#FFF4F6FA</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">#FFFFFFFF</item>
+        <item name="android:textColorHighlight">#552563EB</item>
+    </style>
+
+    <color name="bg">#FFF4F6FA</color>
+</resources>
