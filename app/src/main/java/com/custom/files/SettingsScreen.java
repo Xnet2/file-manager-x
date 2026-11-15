@@ -84,7 +84,7 @@ final class SettingsScreen extends LinearLayout implements MainActivity.Screen {
 
         c = section("אפליקציות מובנות");
         check(c, "מציג תמונות", "החלקה בין תמונות, זום וסיבוב", () -> p.viewImage, v -> p.viewImage = v);
-        check(c, "נגן וידאו", null, () -> p.viewVideo, v -> p.viewVideo = v);
+        if (!Flavor.NO_VIDEO) check(c, "נגן וידאו", null, () -> p.viewVideo, v -> p.viewVideo = v);
         check(c, "נגן מוזיקה", "ניגון כל השירים בתיקיה ברצף", () -> p.viewAudio, v -> p.viewAudio = v);
         check(c, "עורך טקסט", "פתיחה ועריכה של קבצי טקסט", () -> p.viewText, v -> p.viewText = v);
 
@@ -129,7 +129,7 @@ final class SettingsScreen extends LinearLayout implements MainActivity.Screen {
         check(c, "פתח כ…", null, () -> p.menuOpenAs, v -> p.menuOpenAs = v);
 
         c = section("אודות האפליקציה");
-        link(c, "מנהל הקבצים X", "גרסה 2.2 · פועל ללא אינטרנט", () -> Dialogs.message(a, "מנהל הקבצים X 2.2",
+        link(c, Flavor.NAME, "גרסה 2.2 · פועל ללא אינטרנט", () -> Dialogs.message(a, Flavor.NAME + " 2.2",
                 "מנהל קבצים מהיר ונקי, מותאם לעברית.\n\n• עיון, העתקה, העברה, שינוי שם ומחיקה\n• סל מיחזור עם שחזור\n• דחיסה וחילוץ ZIP\n• חיפוש מהיר, קטגוריות וניתוח אחסון\n• מציג תמונות, נגן וידאו ומוזיקה ועורך טקסט מובנים"));
     }
 

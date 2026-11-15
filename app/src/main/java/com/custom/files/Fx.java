@@ -411,7 +411,16 @@ final class Fx {
     }
 
     /** Open a file: built-in viewer when enabled, otherwise an external app. */
+    /** Restricted version: videos cannot be played and APKs cannot be installed. */
+    static boolean blocked(MainActivity a, String name) {
+        int k = kind(name);
+        if (Flavor.NO_VIDEO && k == K_VIDEO) { a.toast("צפייה בסרטונים אינה זמינה בגרסה זו"); return true; }
+        if (Flavor.NO_INSTALL && k == K_APK) { a.toast("התקנת אפליקציות אינה זמינה בגרסה זו"); return true; }
+        return false;
+    }
+
     static void open(MainActivity a, FileItem it, List<FileItem> siblings) {
+        if (blocked(a, it.name)) return;
         Prefs p = a.prefs;
         File f = it.file;
         switch (it.kind) {
@@ -438,6 +447,7 @@ final class Fx {
     }
 
     static void open(MainActivity a, File f, boolean chooser) {
+        if (blocked(a, f.getName())) return;
         String m = mime(f.getName());
         if (m == null) { openAs(a, f); return; }
         Intent i = view(f, m);
@@ -451,12 +461,14 @@ final class Fx {
     }
 
     static void openAs(MainActivity a, File f) {
+        if (blocked(a, f.getName())) return;
         String[] labels = {"טקסט", "תמונה", "שמע", "וידאו", "אחר"};
         String[] types = {"text/plain", "image/*", "audio/*", "video/*", "*/*"};
         int[] icons = {R.drawable.ic_text, R.drawable.ic_image, R.drawable.ic_audio, R.drawable.ic_video, R.drawable.ic_file};
         ArrayList<Dialogs.Item> m = new ArrayList<>();
         for (int k = 0; k < labels.length; k++) {
             final String t = types[k];
+            if (Flavor.NO_VIDEO && (k == 3 || k == 4)) continue; // video/* and */* could play a video
             if (k == 0 && a.prefs.viewText) {
                 m.add(new Dialogs.Item(icons[k], "טקסט (עורך מובנה)", () -> a.push(new Viewers.Text(a, f))));
                 continue;
@@ -474,6 +486,7 @@ final class Fx {
         String type = null;
         for (File f : files) {
             if (f.isDirectory()) continue;
+            if (Flavor.NO_VIDEO && kind(f.getName()) == K_VIDEO) continue;
             uris.add(Provider.uri(f));
             String m = mime(f.getName());
             if (m == null) m = "application/octet-stream";

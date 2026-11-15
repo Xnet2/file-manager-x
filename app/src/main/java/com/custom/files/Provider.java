@@ -13,7 +13,7 @@ import java.io.FileNotFoundException;
 
 /** Minimal FileProvider replacement (no AndroidX): content://com.custom.files.provider/root/<path> */
 public final class Provider extends ContentProvider {
-    static final String AUTH = "com.custom.files.provider";
+    static final String AUTH = Flavor.AUTH;
 
     static Uri uri(File f) {
         return new Uri.Builder().scheme("content").authority(AUTH).path("/root" + f.getAbsolutePath()).build();

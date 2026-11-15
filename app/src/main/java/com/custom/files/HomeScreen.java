@@ -33,7 +33,7 @@ final class HomeScreen extends LinearLayout implements MainActivity.Screen {
 
         LinearLayout bar = Ui.appBar(a);
         bar.addView(Ui.iconBtn(a, R.drawable.ic_menu, Ui.TEXT, "תפריט", v -> a.openDrawer()));
-        TextView t = Ui.line(a, "מנהל הקבצים X", 20, Ui.TEXT, Ui.MEDIUM);
+        TextView t = Ui.line(a, Flavor.NAME, 20, Ui.TEXT, Ui.MEDIUM);
         t.setPaddingRelative(Ui.dp(8), 0, 0, 0);
         bar.addView(t, Ui.lp(0, Ui.WRAP, 1));
         bar.addView(Ui.iconBtn(a, R.drawable.ic_search, Ui.TEXT, "חיפוש", v -> a.push(BrowserScreen.search(a))));
@@ -161,7 +161,7 @@ final class HomeScreen extends LinearLayout implements MainActivity.Screen {
         d.click = () -> a.push(BrowserScreen.dir(a, dlDir));
         tiles.add(d);
         int[] order = {Media.IMAGES, Media.AUDIO, Media.VIDEO, Media.DOCS, Media.APPS, Media.RECENT, Media.ARCHIVES, Media.LARGE};
-        for (int c : order) tiles.add(catTile(c, cats == null ? null : cats[c]));
+        for (int c : order) if (!(Flavor.NO_VIDEO && c == Media.VIDEO)) tiles.add(catTile(c, cats == null ? null : cats[c]));
         Tile tr = new Tile();
         tr.icon = R.drawable.ic_delete;
         tr.color = 0xFF64748B;

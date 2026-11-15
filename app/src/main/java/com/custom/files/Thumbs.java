@@ -38,7 +38,7 @@ final class Thumbs {
             });
 
     static boolean supports(int kind) {
-        return kind == Fx.K_IMAGE || kind == Fx.K_VIDEO || kind == Fx.K_AUDIO || kind == Fx.K_APK;
+        return kind == Fx.K_IMAGE || (kind == Fx.K_VIDEO && !Flavor.NO_VIDEO) || kind == Fx.K_AUDIO || kind == Fx.K_APK;
     }
 
     static Bitmap cached(File f) { return CACHE.get(f.getPath()); }

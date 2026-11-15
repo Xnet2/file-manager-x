@@ -95,7 +95,7 @@ final class Drawer extends FrameLayout {
         head.addView(tile, Ui.lp(Ui.dp(48), Ui.dp(48)));
         LinearLayout ht = Ui.vbox(a);
         ht.setPaddingRelative(Ui.dp(14), 0, 0, 0);
-        ht.addView(Ui.text(a, "מנהל הקבצים X", 19, Ui.TEXT, Ui.BOLD));
+        ht.addView(Ui.text(a, Flavor.NAME, 19, Ui.TEXT, Ui.BOLD));
         ht.addView(Ui.text(a, "מהיר, נקי ובעברית", 12.5f, Ui.TEXT2));
         head.addView(ht);
         col.addView(head);
@@ -110,7 +110,7 @@ final class Drawer extends FrameLayout {
 
         header("ספריות");
         int[] order = {Media.IMAGES, Media.AUDIO, Media.VIDEO, Media.DOCS, Media.APPS, Media.RECENT};
-        for (int c : order) item(Media.ICON[c], Media.COLOR[c], Media.TITLES[c], null, () -> a.push(BrowserScreen.cat(a, c)));
+        for (int c : order) if (!(Flavor.NO_VIDEO && c == Media.VIDEO)) item(Media.ICON[c], Media.COLOR[c], Media.TITLES[c], null, () -> a.push(BrowserScreen.cat(a, c)));
 
         ArrayList<String> bm = a.prefs.bookmarks();
         if (!bm.isEmpty()) {

@@ -22,7 +22,7 @@
         android:requestLegacyExternalStorage="true">
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.custom.files.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode|density"
@@ -34,12 +34,12 @@
         </activity>
 
         <service
-            android:name=".MusicService"
+            android:name="com.custom.files.MusicService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 
         <provider
-            android:name=".Provider"
+            android:name="com.custom.files.Provider"
             android:authorities="com.custom.files.provider"
             android:exported="false"
             android:grantUriPermissions="true" />
