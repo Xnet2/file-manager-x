@@ -87,7 +87,7 @@ final class FileAdapter extends BaseAdapter {
         blp.setMargins(Ui.dp(2), 0, Ui.dp(2), Ui.dp(3));
         tile.addView(h.badgeBox, blp);
         h.check = Ui.img(a, R.drawable.ic_check, 0xFFFFFFFF);
-        h.check.setBackground(Ui.round(0xE62563EB, radius));
+        h.check.setBackground(Ui.round(0xE6D97706, radius));
         int p = Ui.dp(size > 60 ? 26 : 13);
         h.check.setPadding(p, p, p, p);
         tile.addView(h.check, new FrameLayout.LayoutParams(Ui.MATCH, Ui.MATCH));

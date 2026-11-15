@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
 public class MainActivity extends Activity {
     static final Handler H = new Handler(Looper.getMainLooper());
     static final ExecutorService BG = Executors.newCachedThreadPool();
-    static final String EXTRA_PATH = "path";
+    static final String EXTRA_PATH = "path", EXTRA_MUSIC = "music";
 
     interface Screen {
         boolean onBack();
@@ -51,6 +51,7 @@ public class MainActivity extends Activity {
     Prefs prefs;
     FrameLayout host, screens;
     Drawer drawer;
+    Music.Mini mini;
     final ArrayList<View> stack = new ArrayList<>();
     final ArrayList<File> clip = new ArrayList<>();
     boolean clipCut;
@@ -83,7 +84,11 @@ public class MainActivity extends Activity {
         host = new FrameLayout(this);
         host.setBackgroundColor(Ui.BG);
         screens = new FrameLayout(this);
-        host.addView(screens, new FrameLayout.LayoutParams(Ui.MATCH, Ui.MATCH));
+        LinearLayout column = Ui.vbox(this);
+        column.addView(screens, Ui.lp(Ui.MATCH, 0, 1));
+        mini = new Music.Mini(this);
+        column.addView(mini, Ui.lp(Ui.MATCH, Ui.WRAP));
+        host.addView(column, new FrameLayout.LayoutParams(Ui.MATCH, Ui.MATCH));
         drawer = new Drawer(this);
         host.addView(drawer, new FrameLayout.LayoutParams(Ui.MATCH, Ui.MATCH));
         setContentView(host);
@@ -107,6 +112,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onNewIntent(Intent i) {
         super.onNewIntent(i);
+        if (i.getBooleanExtra(EXTRA_MUSIC, false) && hasPerm() && !permShown) { openMusic(); return; }
         String p = i.getStringExtra(EXTRA_PATH);
         if (p != null && hasPerm() && !permShown) {
             goHome();
@@ -118,6 +124,22 @@ public class MainActivity extends Activity {
         File f = new File(p);
         if (f.isDirectory()) push(BrowserScreen.dir(this, f), false);
         else toast("התיקיה לא קיימת");
+    }
+
+    @Override
+    protected void onPause() {
+        View t = top();
+        if (t instanceof Viewers.Closeable) ((Viewers.Closeable) t).pauseHint();
+        super.onPause();
+    }
+
+    /** Open the full music player (or bring it to the front). */
+    void openMusic() {
+        if (!Player.active()) return;
+        View t = top();
+        if (t instanceof Music.Screen) return;
+        for (View v : new ArrayList<>(stack)) if (v instanceof Music.Screen) { stack.remove(v); screens.removeView(v); }
+        push(new Music.Screen(this));
     }
 
     @Override
@@ -197,6 +219,7 @@ public class MainActivity extends Activity {
         stack.clear();
         BG.execute(() -> Trash.purge(getApplicationContext()));
         push(new HomeScreen(this), false);
+        if (getIntent().getBooleanExtra(EXTRA_MUSIC, false)) openMusic();
         if (pendingPath != null) {
             openPath(pendingPath);
             pendingPath = null;
@@ -216,6 +239,7 @@ public class MainActivity extends Activity {
             v.animate().alpha(1f).translationX(0).setDuration(200).setInterpolator(new DecelerateInterpolator())
                     .withEndAction(() -> { if (top() == v) prev.setVisibility(View.GONE); }).start();
         } else if (prev != null) prev.setVisibility(View.GONE);
+        if (mini != null) mini.refresh();
     }
 
     void pop() {
@@ -230,6 +254,7 @@ public class MainActivity extends Activity {
         v.animate().alpha(0f).translationX(-Ui.dp(36)).setDuration(160)
                 .withEndAction(() -> screens.removeView(v)).start();
         if (prev instanceof Screen) ((Screen) prev).onShow();
+        if (mini != null) mini.refresh();
     }
 
     void goHome() {
@@ -243,6 +268,7 @@ public class MainActivity extends Activity {
         h.setVisibility(View.VISIBLE);
         h.setAlpha(1f);
         if (h instanceof Screen) ((Screen) h).onShow();
+        if (mini != null) mini.refresh();
     }
 
     void openDrawer() {

@@ -129,7 +129,7 @@ final class SettingsScreen extends LinearLayout implements MainActivity.Screen {
         check(c, "פתח כ…", null, () -> p.menuOpenAs, v -> p.menuOpenAs = v);
 
         c = section("אודות האפליקציה");
-        link(c, "מנהל הקבצים X", "גרסה 2.1 · פועל ללא אינטרנט", () -> Dialogs.message(a, "מנהל הקבצים X 2.1",
+        link(c, "מנהל הקבצים X", "גרסה 2.2 · פועל ללא אינטרנט", () -> Dialogs.message(a, "מנהל הקבצים X 2.2",
                 "מנהל קבצים מהיר ונקי, מותאם לעברית.\n\n• עיון, העתקה, העברה, שינוי שם ומחיקה\n• סל מיחזור עם שחזור\n• דחיסה וחילוץ ZIP\n• חיפוש מהיר, קטגוריות וניתוח אחסון\n• מציג תמונות, נגן וידאו ומוזיקה ועורך טקסט מובנים"));
     }
 

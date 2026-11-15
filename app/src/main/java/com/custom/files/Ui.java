@@ -20,9 +20,9 @@ import android.widget.TextView;
 
 /** Design tokens and small view factories (the whole UI is built in code, no XML layouts). */
 final class Ui {
-    static final int BG = 0xFFF4F6FA, SURFACE = 0xFFFFFFFF, PRIMARY = 0xFF2563EB, PRIMARY_SOFT = 0xFFE8EFFD,
+    static final int BG = 0xFFF4F6FA, SURFACE = 0xFFFFFFFF, PRIMARY = 0xFFD97706, PRIMARY_SOFT = 0xFFFFF3DA,
             TEXT = 0xFF0F172A, TEXT2 = 0xFF64748B, TEXT3 = 0xFF94A3B8, DIVIDER = 0xFFE7EBF1,
-            DANGER = 0xFFDC2626, SELECTED = 0xFFDFE9FD, AMBER = 0xFFF59E0B, DARK = 0xFF1E293B;
+            DANGER = 0xFFDC2626, SELECTED = 0xFFFFEBC2, AMBER = 0xFFF59E0B, DARK = 0xFF1E293B;
     static final int MATCH = -1, WRAP = -2;
     static float density = 1;
     static Typeface MEDIUM = Typeface.DEFAULT, BOLD = Typeface.DEFAULT_BOLD, REGULAR = Typeface.DEFAULT;
@@ -66,13 +66,13 @@ final class Ui {
     }
 
     static Drawable ripple(Drawable content, float r) {
-        return new RippleDrawable(csl(0x1A2563EB), content, round(0xFFFFFFFF, r));
+        return new RippleDrawable(csl(0x22D97706), content, round(0xFFFFFFFF, r));
     }
 
     static Drawable ripple(int color, float r) { return ripple(round(color, r), r); }
 
     static Drawable rippleRect() {
-        return new RippleDrawable(csl(0x142563EB), null, new ColorDrawable(0xFFFFFFFF));
+        return new RippleDrawable(csl(0x1CD97706), null, new ColorDrawable(0xFFFFFFFF));
     }
 
     static Drawable rippleBorderless() {

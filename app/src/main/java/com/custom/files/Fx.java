@@ -41,9 +41,9 @@ final class Fx {
     static final int[] ICON = {R.drawable.ic_folder, R.drawable.ic_image, R.drawable.ic_video, R.drawable.ic_audio,
             R.drawable.ic_doc, R.drawable.ic_doc, R.drawable.ic_doc, R.drawable.ic_doc, R.drawable.ic_apk,
             R.drawable.ic_archive, R.drawable.ic_doc, R.drawable.ic_file};
-    static final int[] COLOR = {0xFF3B82F6, 0xFF8B5CF6, 0xFFEF4444, 0xFFF59E0B, 0xFF2563EB, 0xFF16A34A, 0xFFEA580C,
+    static final int[] COLOR = {0xFFE09A2E, 0xFF8B5CF6, 0xFFEF4444, 0xFFF59E0B, 0xFF2563EB, 0xFF16A34A, 0xFFEA580C,
             0xFFDC2626, 0xFF22A35A, 0xFFB7791F, 0xFF64748B, 0xFF64748B};
-    static final int[] SOFT = {0xFFE3EDFF, 0xFFF0EAFE, 0xFFFDECEC, 0xFFFEF3DC, 0xFFE4ECFD, 0xFFE2F5E8, 0xFFFDEDE2,
+    static final int[] SOFT = {0xFFFFF1D6, 0xFFF0EAFE, 0xFFFDECEC, 0xFFFEF3DC, 0xFFE4ECFD, 0xFFE2F5E8, 0xFFFDEDE2,
             0xFFFCE7E7, 0xFFE3F5EA, 0xFFF8EEDA, 0xFFEEF1F5, 0xFFEEF1F5};
     static final ColorStateList[] COLOR_CSL = new ColorStateList[COLOR.length], SOFT_CSL = new ColorStateList[SOFT.length];
     static final String[] KIND_NAME = {"תיקיה", "תמונה", "וידאו", "שמע", "מסמך", "גיליון", "מצגת", "PDF",
@@ -419,10 +419,10 @@ final class Fx {
                 if (p.viewImage && !"svg".equals(ext(it.name))) { a.push(new Viewers.Image(a, it, siblings)); return; }
                 break;
             case K_VIDEO:
-                if (p.viewVideo) { a.push(new Viewers.Video(a, f)); return; }
+                if (p.viewVideo) { a.push(new VideoPlayer(a, it, siblings)); return; }
                 break;
             case K_AUDIO:
-                if (p.viewAudio) { Viewers.music(a, it, siblings); return; }
+                if (p.viewAudio) { Music.open(a, it, siblings); return; }
                 break;
             case K_TEXT:
                 if (p.viewText && !"epub".equals(ext(it.name)) && !"html".equals(ext(it.name)) && !"htm".equals(ext(it.name))) {

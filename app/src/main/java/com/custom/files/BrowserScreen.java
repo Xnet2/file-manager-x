@@ -175,14 +175,14 @@ final class BrowserScreen extends FrameLayout implements MainActivity.Screen {
     private void buildSelBar(FrameLayout top) {
         selBar = Ui.hbox(a);
         Ui.pad(selBar, 4, 0, 4, 0);
-        selBar.setBackgroundColor(Ui.PRIMARY);
-        selBar.addView(Ui.iconBtn(a, R.drawable.ic_close, 0xFFFFFFFF, "ביטול בחירה", v -> exitSelection()));
-        selTitle = Ui.line(a, "", 19, 0xFFFFFFFF, Ui.MEDIUM);
+        selBar.setBackgroundColor(Ui.SELECTED);
+        selBar.addView(Ui.iconBtn(a, R.drawable.ic_close, Ui.TEXT, "ביטול בחירה", v -> exitSelection()));
+        selTitle = Ui.line(a, "", 19, Ui.TEXT, Ui.MEDIUM);
         selTitle.setTextDirection(View.TEXT_DIRECTION_RTL);
         selTitle.setPaddingRelative(Ui.dp(6), 0, 0, 0);
         selBar.addView(selTitle, Ui.lp(0, Ui.WRAP, 1));
-        selBar.addView(Ui.iconBtn(a, R.drawable.ic_select_all, 0xFFFFFFFF, "בחר הכל", v -> selectAll()));
-        selBar.addView(Ui.iconBtn(a, R.drawable.ic_select_range, 0xFFFFFFFF, "בחר טווח", v -> selectRange()));
+        selBar.addView(Ui.iconBtn(a, R.drawable.ic_select_all, Ui.TEXT, "בחר הכל", v -> selectAll()));
+        selBar.addView(Ui.iconBtn(a, R.drawable.ic_select_range, Ui.TEXT, "בחר טווח", v -> selectRange()));
         top.addView(selBar, new LayoutParams(Ui.MATCH, Ui.MATCH));
     }
 
@@ -398,7 +398,7 @@ final class BrowserScreen extends FrameLayout implements MainActivity.Screen {
             pasteTitle.setText((n == 1 ? a.clip.get(0).getName() : Fx.items(n)) + (a.clipCut ? " · להעברה" : " · להעתקה"));
             pasteSub.setText("נווטו לתיקיית היעד והקישו \"הדבק כאן\"");
         }
-        a.setBars(selecting ? Ui.PRIMARY : Ui.SURFACE, !selecting);
+        a.setBars(selecting ? Ui.SELECTED : Ui.SURFACE, true);
     }
 
     private String titleOf(Loc l) {

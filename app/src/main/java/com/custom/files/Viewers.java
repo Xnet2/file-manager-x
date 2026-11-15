@@ -45,7 +45,12 @@ import java.util.Locale;
 
 /** Built-in image viewer, video player, music player and text editor. */
 final class Viewers {
-    interface Closeable { void close(); }
+    interface Closeable {
+        void close();
+
+        /** The activity is going to the background. */
+        default void pauseHint() { }
+    }
 
     private static LinearLayout overlayBar(MainActivity a, String titleText, TextView[] titleOut) {
         LinearLayout bar = Ui.hbox(a);
@@ -282,194 +287,8 @@ final class Viewers {
         @Override protected void onAttachedToWindow() { super.onAttachedToWindow(); onShow(); }
 
         @Override public void close() { gen++; }
-    }
 
-    // ================================================================= video
-
-    static final class Video extends FrameLayout implements MainActivity.Screen, Closeable {
-        private final MainActivity a;
-        private final VideoView vv;
-
-        Video(MainActivity a, File f) {
-            super(a);
-            this.a = a;
-            setBackgroundColor(0xFF000000);
-            vv = new VideoView(a);
-            addView(vv, new LayoutParams(Ui.MATCH, Ui.MATCH, Gravity.CENTER));
-            MediaController mc = new MediaController(a);
-            mc.setAnchorView(this);
-            vv.setMediaController(mc);
-            vv.setVideoURI(Uri.fromFile(f));
-            vv.setOnPreparedListener(mp -> {
-                vv.start();
-                mc.show(2500);
-            });
-            vv.setOnErrorListener((mp, w, e) -> {
-                a.toast("לא ניתן לנגן את הסרטון — נפתח באפליקציה אחרת");
-                a.onBackPressed();
-                Fx.open(a, f, false);
-                return true;
-            });
-            LinearLayout top = overlayBar(a, f.getName(), null);
-            addView(top, new LayoutParams(Ui.MATCH, Ui.dp(72), Gravity.TOP));
-            setOnClickListener(v -> top.setVisibility(top.getVisibility() == VISIBLE ? GONE : VISIBLE));
-        }
-
-        @Override public boolean onBack() { return false; }
-
-        @Override public void onShow() { a.setBars(0xFF000000, false); }
-
-        @Override protected void onAttachedToWindow() { super.onAttachedToWindow(); onShow(); }
-
-        @Override public void close() { try { vv.stopPlayback(); } catch (Exception ignored) { } }
-    }
-
-    // ================================================================= music
-
-    static void music(MainActivity a, FileItem start, List<FileItem> siblings) {
-        final ArrayList<File> list = new ArrayList<>();
-        for (FileItem s : siblings) if (s.kind == Fx.K_AUDIO) list.add(s.file);
-        if (!list.contains(start.file)) list.add(0, start.file);
-        final int[] idx = {list.indexOf(start.file)};
-        final MediaPlayer[] mp = {null};
-
-        LinearLayout box = Ui.vbox(a);
-        Ui.pad(box, 24, 14, 24, 22);
-        View handle = new View(a);
-        handle.setBackground(Ui.round(0xFFD5DBE3, 3));
-        LinearLayout.LayoutParams hp = Ui.lp(Ui.dp(40), Ui.dp(4));
-        hp.gravity = Gravity.CENTER_HORIZONTAL;
-        box.addView(handle, hp);
-        LinearLayout head = Ui.hbox(a);
-        FrameLayout art = new FrameLayout(a);
-        art.setBackground(Ui.round(0xFFDDF5F1, 18));
-        art.setClipToOutline(true);
-        ImageView note = Ui.img(a, R.drawable.ic_audio, 0xFF0D9488);
-        art.addView(note, new FrameLayout.LayoutParams(Ui.dp(34), Ui.dp(34), Gravity.CENTER));
-        ImageView cover = new ImageView(a);
-        cover.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        art.addView(cover, new FrameLayout.LayoutParams(Ui.MATCH, Ui.MATCH));
-        head.addView(art, Ui.lp(Ui.dp(76), Ui.dp(76)));
-        LinearLayout t = Ui.vbox(a);
-        t.setPaddingRelative(Ui.dp(16), 0, 0, 0);
-        TextView title = Ui.text(a, "", 17, Ui.TEXT, Ui.MEDIUM);
-        title.setMaxLines(2);
-        TextView sub = Ui.line(a, "", 13, Ui.TEXT2, Ui.REGULAR);
-        t.addView(title);
-        t.addView(sub);
-        head.addView(t, Ui.lp(0, Ui.WRAP, 1));
-        box.addView(head, Ui.margins(Ui.lp(Ui.MATCH, Ui.WRAP), 0, 18, 0, 0));
-        SeekBar seek = new SeekBar(a);
-        seek.setProgressTintList(Ui.csl(Ui.PRIMARY));
-        seek.setThumbTintList(Ui.csl(Ui.PRIMARY));
-        seek.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-        box.addView(seek, Ui.margins(Ui.lp(Ui.MATCH, Ui.WRAP), 0, 20, 0, 0));
-        LinearLayout times = Ui.hbox(a);
-        times.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-        TextView pos = Ui.text(a, "0:00", 12, Ui.TEXT2), dur = Ui.text(a, "0:00", 12, Ui.TEXT2);
-        times.addView(pos, Ui.lp(0, Ui.WRAP, 1));
-        times.addView(dur);
-        box.addView(times, Ui.margins(Ui.lp(Ui.MATCH, Ui.WRAP), 16, 0, 16, 0));
-        LinearLayout ctl = Ui.hbox(a);
-        ctl.setGravity(Gravity.CENTER);
-        ctl.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-        ImageView prev = Ui.iconBtn(a, R.drawable.ic_prev, Ui.TEXT, "הקודם", null);
-        ImageView play = Ui.img(a, R.drawable.ic_pause, 0xFFFFFFFF);
-        play.setBackground(new android.graphics.drawable.RippleDrawable(Ui.csl(0x40FFFFFF), Ui.oval(Ui.PRIMARY), null));
-        int pp = Ui.dp(16);
-        play.setPadding(pp, pp, pp, pp);
-        ImageView next = Ui.iconBtn(a, R.drawable.ic_next, Ui.TEXT, "הבא", null);
-        ctl.addView(prev, Ui.lp(Ui.dp(56), Ui.dp(56)));
-        ctl.addView(play, Ui.margins(Ui.lp(Ui.dp(64), Ui.dp(64)), 24, 0, 24, 0));
-        ctl.addView(next, Ui.lp(Ui.dp(56), Ui.dp(56)));
-        box.addView(ctl, Ui.margins(Ui.lp(Ui.MATCH, Ui.WRAP), 0, 8, 0, 0));
-
-        Dialog d = Dialogs.make(a, box, true);
-        final boolean[] alive = {true};
-        final Runnable[] playAt = {null};
-        Runnable tick = new Runnable() {
-            @Override public void run() {
-                if (!alive[0]) return;
-                MediaPlayer p = mp[0];
-                if (p != null) {
-                    try {
-                        seek.setProgress(p.getCurrentPosition());
-                        pos.setText(time(p.getCurrentPosition()));
-                    } catch (Exception ignored) { }
-                }
-                MainActivity.H.postDelayed(this, 400);
-            }
-        };
-        playAt[0] = () -> {
-            if (mp[0] != null) { mp[0].release(); mp[0] = null; }
-            File f = list.get(idx[0]);
-            title.setText(Fx.base(f.getName()));
-            sub.setText(f.getParentFile() == null ? "" : f.getParentFile().getName() + (list.size() > 1 ? "  ·  " + (idx[0] + 1) + "/" + list.size() : ""));
-            cover.setImageDrawable(null);
-            MainActivity.BG.execute(() -> {
-                Bitmap b = null;
-                MediaMetadataRetriever r = new MediaMetadataRetriever();
-                try {
-                    r.setDataSource(f.getPath());
-                    byte[] pic = r.getEmbeddedPicture();
-                    if (pic != null) b = BitmapFactory.decodeByteArray(pic, 0, pic.length);
-                } catch (Exception ignored) {
-                } finally {
-                    try { r.release(); } catch (Exception ignored) { }
-                }
-                final Bitmap fb = b;
-                MainActivity.H.post(() -> { if (alive[0]) cover.setImageBitmap(fb); });
-            });
-            try {
-                MediaPlayer p = new MediaPlayer();
-                p.setDataSource(f.getPath());
-                p.setOnCompletionListener(x -> {
-                    if (idx[0] + 1 < list.size()) { idx[0]++; playAt[0].run(); }
-                    else play.setImageResource(R.drawable.ic_play);
-                });
-                p.prepare();
-                p.start();
-                mp[0] = p;
-                seek.setMax(p.getDuration());
-                dur.setText(time(p.getDuration()));
-                play.setImageResource(R.drawable.ic_pause);
-            } catch (Exception e) {
-                a.toast("לא ניתן לנגן את " + f.getName());
-            }
-        };
-        play.setOnClickListener(v -> {
-            MediaPlayer p = mp[0];
-            if (p == null) { playAt[0].run(); return; }
-            if (p.isPlaying()) { p.pause(); play.setImageResource(R.drawable.ic_play); }
-            else { p.start(); play.setImageResource(R.drawable.ic_pause); }
-        });
-        prev.setOnClickListener(v -> {
-            if (mp[0] != null && mp[0].getCurrentPosition() > 3000) { mp[0].seekTo(0); return; }
-            if (idx[0] > 0) { idx[0]--; playAt[0].run(); }
-        });
-        next.setOnClickListener(v -> { if (idx[0] + 1 < list.size()) { idx[0]++; playAt[0].run(); } });
-        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override public void onProgressChanged(SeekBar s, int p, boolean user) {
-                if (user && mp[0] != null) { mp[0].seekTo(p); pos.setText(time(p)); }
-            }
-
-            @Override public void onStartTrackingTouch(SeekBar s) { }
-
-            @Override public void onStopTrackingTouch(SeekBar s) { }
-        });
-        d.setOnDismissListener(x -> {
-            alive[0] = false;
-            if (mp[0] != null) { mp[0].release(); mp[0] = null; }
-        });
-        Dialogs.show(d, true);
-        playAt[0].run();
-        tick.run();
-    }
-
-    private static String time(int ms) {
-        int s = ms / 1000;
-        return s >= 3600 ? String.format(Locale.US, "%d:%02d:%02d", s / 3600, s / 60 % 60, s % 60)
-                : String.format(Locale.US, "%d:%02d", s / 60, s % 60);
+        @Override public void pauseHint() { }
     }
 
     // ================================================================= text editor
