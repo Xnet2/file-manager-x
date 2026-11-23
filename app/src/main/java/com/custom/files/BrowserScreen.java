@@ -116,6 +116,10 @@ final class BrowserScreen extends FrameLayout implements MainActivity.Screen {
         this.p = a.prefs;
         setBackgroundColor(Ui.SURFACE);
         ad = new FileAdapter(a);
+        ad.iconTap = it -> {
+            if (selecting) toggle(it);
+            else selectToggle(it);
+        };
 
         LinearLayout col = Ui.vbox(a);
         addView(col, new LayoutParams(Ui.MATCH, Ui.MATCH));
@@ -811,7 +815,11 @@ final class BrowserScreen extends FrameLayout implements MainActivity.Screen {
 
     private void onLongClick(int pos) {
         if (pos < 0 || pos >= ad.items.size()) return;
-        FileItem it = ad.items.get(pos);
+        selectToggle(ad.items.get(pos));
+    }
+
+    /** Long-press, or a tap on the file icon (when enabled in settings): select / unselect. */
+    private void selectToggle(FileItem it) {
         if (!selecting) {
             selecting = true;
             ad.selecting = true;

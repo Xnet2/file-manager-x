@@ -76,7 +76,10 @@ final class SettingsScreen extends LinearLayout implements MainActivity.Screen {
     }
 
     private void build() {
-        LinearLayout c = section("אפליקציות ברירת מחדל");
+        LinearLayout c = section("רשימת הקבצים");
+        check(c, "לחיצה על הסמל בוחרת את הקובץ", "לחיצה על הסמל מסמנת את הקובץ, ולחיצה על השם פותחת אותו", () -> p.iconSelects, v -> p.iconSelects = v);
+
+        c = section("אפליקציות ברירת מחדל");
         link(c, "אפליקציות ברירת מחדל", "ניהול האפליקציות שנפתחות כברירת מחדל לכל סוג קובץ", () -> {
             try { a.startActivity(new Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)); }
             catch (Exception e) { a.toast("לא זמין במכשיר זה"); }
@@ -129,7 +132,7 @@ final class SettingsScreen extends LinearLayout implements MainActivity.Screen {
         check(c, "פתח כ…", null, () -> p.menuOpenAs, v -> p.menuOpenAs = v);
 
         c = section("אודות האפליקציה");
-        link(c, Flavor.NAME, "גרסה 2.2 · פועל ללא אינטרנט", () -> Dialogs.message(a, Flavor.NAME + " 2.2",
+        link(c, Flavor.NAME, "גרסה 2.3 · פועל ללא אינטרנט", () -> Dialogs.message(a, Flavor.NAME + " 2.3",
                 "מנהל קבצים מהיר ונקי, מותאם לעברית.\n\n• עיון, העתקה, העברה, שינוי שם ומחיקה\n• סל מיחזור עם שחזור\n• דחיסה וחילוץ ZIP\n• חיפוש מהיר, קטגוריות וניתוח אחסון\n• מציג תמונות, נגן וידאו ומוזיקה ועורך טקסט מובנים"));
     }
 

@@ -180,9 +180,12 @@ final class VideoPlayer extends FrameLayout implements MainActivity.Screen, View
         row.addView(pos);
         seek = new SeekBar(a);
         seek.setProgressTintList(Ui.csl(Ui.AMBER));
-        seek.setThumbTintList(Ui.csl(Ui.AMBER));
         seek.setProgressBackgroundTintList(Ui.csl(0x80FFFFFF));
-        row.addView(seek, Ui.lp(0, Ui.WRAP, 1));
+        seek.setThumb(seekThumb());
+        seek.setSplitTrack(false);
+        seek.setPadding(Ui.dp(16), Ui.dp(14), Ui.dp(16), Ui.dp(14)); // tall touch area: easy to grab
+        if (android.os.Build.VERSION.SDK_INT >= 29) { seek.setMinHeight(Ui.dp(5)); seek.setMaxHeight(Ui.dp(5)); }
+        row.addView(seek, Ui.lp(0, Ui.dp(52), 1));
         dur = Ui.text(a, "0:00", 13, 0xFFFFFFFF, Ui.MEDIUM);
         row.addView(dur);
         row.addView(new View(a), Ui.lp(Ui.dp(12), 1));
@@ -190,14 +193,17 @@ final class VideoPlayer extends FrameLayout implements MainActivity.Screen, View
         controls.addView(bottom, new LayoutParams(Ui.MATCH, Ui.WRAP, Gravity.BOTTOM));
         seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override public void onProgressChanged(SeekBar s, int p, boolean user) {
-                if (user) { pos.setText(Player.time(p)); flash(Player.time(p) + " / " + Player.time(s.getMax())); }
+                if (!user) return;
+                pos.setText(Player.time(p));
+                flash(Player.time(p) + " / " + Player.time(s.getMax()));
+                seekTo(p); // live preview while dragging (seeks are queued, never piled up)
             }
 
             @Override public void onStartTrackingTouch(SeekBar s) { dragging = true; MainActivity.H.removeCallbacks(autoHide); }
 
             @Override public void onStopTrackingTouch(SeekBar s) {
                 dragging = false;
-                if (prepared) mp.seekTo(s.getProgress());
+                seekTo(s.getProgress());
                 scheduleHide();
             }
         });
@@ -270,6 +276,7 @@ final class VideoPlayer extends FrameLayout implements MainActivity.Screen, View
                 applyFit();
             });
             mp.setOnPreparedListener(p -> onPrepared(f));
+            mp.setOnSeekCompleteListener(p -> seekDone());
             mp.setOnCompletionListener(p -> {
                 resume.edit().remove(f.getPath()).apply();
                 if (idx + 1 < list.size()) {
@@ -315,7 +322,7 @@ final class VideoPlayer extends FrameLayout implements MainActivity.Screen, View
             a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         int saved = resume.getInt(f.getPath(), 0);
         if (saved > 5000 && saved < d - 10_000) {
-            mp.seekTo(saved);
+            seekTo(saved);
             flash("ממשיך מ-" + Player.time(saved));
         }
         attachSubtitles(f);
@@ -348,7 +355,7 @@ final class VideoPlayer extends FrameLayout implements MainActivity.Screen, View
     private void skip(int ms) {
         if (!prepared) return;
         int p = Math.max(0, Math.min(mp.getDuration(), mp.getCurrentPosition() + ms));
-        mp.seekTo(p);
+        seekTo(p);
         flash((ms > 0 ? "‎+" : "‎−") + Math.abs(ms / 1000) + " שניות");
         scheduleHide();
     }
@@ -369,8 +376,62 @@ final class VideoPlayer extends FrameLayout implements MainActivity.Screen, View
         } catch (Exception ignored) { }
     }
 
+    // ------------------------------------------------------------ seeking
+    // Firing many seeks at MediaPlayer while it is still decoding the previous one freezes the
+    // picture on many devices while the sound goes on. So only one seek runs at a time; the newest
+    // request waits and runs when the current one completes. Seeks land on a key frame (SYNC),
+    // which keeps picture and sound together.
+
+    private boolean seekBusy;
+    private int pendingSeek = -1;
+    private final Runnable seekWatchdog = this::seekDone;
+
+    private void seekTo(int ms) {
+        if (!prepared || mp == null) return;
+        if (seekBusy) { pendingSeek = ms; return; }
+        seekBusy = true;
+        try {
+            mp.seekTo(Math.max(0, ms), MediaPlayer.SEEK_CLOSEST_SYNC);
+        } catch (Exception e) {
+            seekBusy = false;
+            return;
+        }
+        MainActivity.H.removeCallbacks(seekWatchdog);
+        MainActivity.H.postDelayed(seekWatchdog, 1500); // some decoders never report completion
+    }
+
+    private void seekDone() {
+        MainActivity.H.removeCallbacks(seekWatchdog);
+        seekBusy = false;
+        if (pendingSeek >= 0) {
+            int p = pendingSeek;
+            pendingSeek = -1;
+            seekTo(p);
+        }
+    }
+
+    private android.graphics.drawable.Drawable seekThumb() {
+        GradientDrawable normal = new GradientDrawable();
+        normal.setShape(GradientDrawable.OVAL);
+        normal.setColor(Ui.AMBER);
+        normal.setStroke(Ui.dp(2), 0xFFFFFFFF);
+        normal.setSize(Ui.dp(20), Ui.dp(20));
+        GradientDrawable pressed = new GradientDrawable();
+        pressed.setShape(GradientDrawable.OVAL);
+        pressed.setColor(Ui.AMBER);
+        pressed.setStroke(Ui.dp(3), 0xFFFFFFFF);
+        pressed.setSize(Ui.dp(28), Ui.dp(28));
+        android.graphics.drawable.StateListDrawable s = new android.graphics.drawable.StateListDrawable();
+        s.addState(new int[]{android.R.attr.state_pressed}, pressed);
+        s.addState(new int[]{}, normal);
+        return s;
+    }
+
     private void releasePlayer() {
         prepared = false;
+        seekBusy = false;
+        pendingSeek = -1;
+        MainActivity.H.removeCallbacks(seekWatchdog);
         if (mp != null) {
             try { mp.release(); } catch (Exception ignored) { }
             mp = null;
@@ -657,7 +718,7 @@ final class VideoPlayer extends FrameLayout implements MainActivity.Screen, View
                     boosted = false;
                     applySpeed();
                 }
-                if (gMode == G_SEEK) mp.seekTo(gTarget);
+                if (gMode == G_SEEK) seekTo(gTarget);
                 if (gMode != G_NONE || center.getAlpha() > 0) {
                     MainActivity.H.removeCallbacks(hideCenter);
                     MainActivity.H.postDelayed(hideCenter, 500);

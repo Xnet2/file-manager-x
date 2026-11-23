@@ -23,6 +23,8 @@ final class FileAdapter extends BaseAdapter {
     final ArrayList<FileItem> items = new ArrayList<>();
     boolean grid, selecting, trash;
     final int thumbPx = Ui.dp(96);
+    /** Tap on the file icon selects instead of opening (like File Manager +). Null = off. */
+    java.util.function.Consumer<FileItem> iconTap;
 
     FileAdapter(MainActivity a) { this.a = a; }
 
@@ -182,6 +184,23 @@ final class FileAdapter extends BaseAdapter {
             h.badge.setImageTintList(Ui.csl(it.cover != null ? 0xFFE09A2E : Fx.folderBadgeColor(badge)));
         }
         h.check.setVisibility(it.selected ? View.VISIBLE : View.GONE);
+        if (iconTap != null && a.prefs.iconSelects) {
+            h.tile.setTag(it);
+            h.tile.setOnClickListener(v -> {
+                v.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK);
+                iconTap.accept((FileItem) v.getTag());
+            });
+            h.tile.setOnLongClickListener(v -> {
+                v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                iconTap.accept((FileItem) v.getTag());
+                return true;
+            });
+        } else {
+            h.tile.setOnClickListener(null);
+            h.tile.setOnLongClickListener(null);
+            h.tile.setClickable(false);
+            h.tile.setLongClickable(false);
+        }
         h.root.setBackground(it.selected ? h.bgSel : h.bgNormal);
         h.root.setAlpha(it.name.startsWith(".") ? 0.6f : 1f);
         h.info.setText(info(it, grid));

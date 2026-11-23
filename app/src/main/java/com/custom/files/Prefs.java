@@ -17,6 +17,7 @@ final class Prefs {
     // notifications / bin / advanced
     boolean notifyFull, trashDefault, confirmDelete, navIcon, usb, history, systemStorage;
     boolean decimalUnits;
+    boolean iconSelects;  // tap on a file icon selects it (like File Manager +)
     // advanced menu items
     boolean menuBookmark, menuShortcut, menuHide, menuOpenAs;
 
@@ -39,6 +40,7 @@ final class Prefs {
         history = sp.getBoolean("history", true);
         systemStorage = sp.getBoolean("systemStorage", false);
         decimalUnits = sp.getBoolean("decimalUnits", false);
+        iconSelects = sp.getBoolean("iconSelects", true);
         menuBookmark = sp.getBoolean("menuBookmark", true);
         menuShortcut = sp.getBoolean("menuShortcut", true);
         menuHide = sp.getBoolean("menuHide", false);
@@ -55,7 +57,7 @@ final class Prefs {
                 .putBoolean("notifyFull", notifyFull).putBoolean("trashDefault", trashDefault)
                 .putBoolean("confirmDelete", confirmDelete).putBoolean("navIcon", navIcon)
                 .putBoolean("usb", usb).putBoolean("history", history)
-                .putBoolean("systemStorage", systemStorage).putBoolean("decimalUnits", decimalUnits)
+                .putBoolean("systemStorage", systemStorage).putBoolean("decimalUnits", decimalUnits).putBoolean("iconSelects", iconSelects)
                 .putBoolean("menuBookmark", menuBookmark).putBoolean("menuShortcut", menuShortcut)
                 .putBoolean("menuHide", menuHide).putBoolean("menuOpenAs", menuOpenAs)
                 .apply();
